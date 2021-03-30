@@ -24,6 +24,8 @@ from src.account import account
 class impoter:
     def __init__(self, account):#输入字典列表
         csv_obj=csv_loader.csv_file(account)
+        self.csv_obj=csv_obj
+        self.acc=account
         self.orig_data=csv_obj._get_data()#暂不使用字典格式
         self.content = []
         self.to_deal = []
@@ -58,7 +60,15 @@ class impoter:
 
     def run(self):#运行导入，导入原始账单与合并账单
         #alipay.import_data(self.orig_data)#导入原始账单
+        
         self.parse()
+        
+        alipay=sheet('tt.xlsx',self.acc.name,start_row=5,end_row=7)
+        alipay.import_data_from_csv(self.csv_obj)
+
+        alipay=sheet('tt.xlsx','all',start_row=0,end_row=0)
+        alipay.insert_rows(2,a.content)
+        alipay.wb.save(alipay.file_name)#保存数据
 
 class AliPayimpoter(impoter):
     def _get_statu(self,row):#获取交易状态与处理暂存区，
@@ -279,26 +289,10 @@ class ICBCimpoter(impoter):
         item[7]=  '待处理'
         ##处理几个关于退款的待处理，有几个退款不能匹配
         if row[1]=='退款':
-            print(1)
             for i in range(len(self.content)):##匹配列表并处理关联项
                 if(self.content[i][1].split('@')[0]==row[2]):#找到对方
                     self.content[i][7]='已废'
                     item[7]='已废'
-                # elif(self.to_deal[i][2]==row[2] and row[7] == '已全额退款'):#退款匹配到了
-                #     if (self.to_deal[i][4] == '收入' and row[4] == '支出')\
-                #         or (self.to_deal[i][4] == '支出' and row[4] == '收入'):
-                #         if self.to_deal[i][5]==row[5]:
-                #             ta=self.to_deal[i]
-                #             self.to_deal.remove(self.to_deal[i])#删除对方
-                #             for ii in range(len(self.to_deal)):#删除自己
-                #                 if(self.to_deal[ii][0]==row[0]):
-                #                     self.to_deal.remove(self.to_deal[ii])  
-                #                     break 
-                #             ta[8]=''
-                #             self.content.append(self._last_deal(ta))#处理对方  
-                #             item[7]= '已废'
-                #             break
-
         #交易时间
         item[0] = row[0]
         #金额（元）
@@ -356,7 +350,7 @@ class ICBCimpoter(impoter):
             return 0
             
         item[4]='ICBC'+row[2].split('-')[0]
-        item[1]=row[2]+row[3]
+        item[1]=row[2]+'@'+row[3]
         item[5]=''
         item[6]=''
         item[8]=''
@@ -364,31 +358,23 @@ class ICBCimpoter(impoter):
         return item
 
 if __name__ =="__main__":
-    # alipay=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
-    # a=AliPayimpoter(alipay)
-    # a.parse()
-    # alipay=sheet('tt.xlsx','alipay2',start_row=0,end_row=0)
-    # alipay.insert_row(1,['交易时间'	,'交易详情','金额（元）','收/支','交易平台','交易类型','预算归属','交易状态' ,'来源\去向','备注'])
-    # alipay.insert_rows(2,a.content)
-    # alipay.wb.save(alipay.file_name)#保存数据
+    import os
+    file=home+"/tt.xlsx"
+    if  os.path.isfile(file):
+        os.remove(file)
 
+    alipay=sheet('tt.xlsx','all',start_row=0,end_row=0)
+    alipay.insert_row(1,['交易时间'	,'交易详情','金额（元）','收/支','交易平台','交易类型','预算归属','交易状态' ,'来源\去向','备注'])
+    alipay.wb.save(file)#保存数据
 
-    # wechat=account(home+"/data/temp/微信支付账单(20201101-20201201).csv",'WechatPay',start_row=17,endrow=0,encoding='UTF-8')
-    # a=WeChatimpoter(wechat)
-    # a.parse()
-    # alipay=sheet('tt.xlsx','WECHAT2',start_row=0,end_row=0)
-    # alipay.insert_row(1,['交易时间'	,'交易详情','金额（元）','收/支','交易平台','交易类型','预算归属','交易状态' ,'来源\去向','备注'])
-    # alipay.insert_rows(2,a.content)
-    # alipay.wb.save(alipay.file_name)#保存数据
+    alipay=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
+    a=AliPayimpoter(alipay)
+    a.run()
 
-
+    wechat=account(home+"/data/temp/微信支付账单(20201101-20201201).csv",'WechatPay',start_row=17,endrow=0,encoding='UTF-8')
+    a=WeChatimpoter(wechat)
+    a.run()
 
     icbc=account(home+"/data/temp/hisdetail1614412687141.csv",'icbc',start_row=7,endrow=2,encoding='UTF-8')
     a=ICBCimpoter(icbc)
-    a.parse()
-    alipay=sheet('tt.xlsx','icbc',start_row=0,end_row=0)
-    alipay.insert_row(1,['交易时间'	,'交易详情','金额（元）','收/支','交易平台','交易类型','预算归属','交易状态' ,'来源\去向','备注'])
-    alipay.insert_rows(2,a.content)
-    alipay.wb.save(alipay.file_name)#保存数据
-
-    
+    a.run()

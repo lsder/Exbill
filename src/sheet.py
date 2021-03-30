@@ -43,9 +43,7 @@ class sheet:
             if i>self.startrow and i<self.sheet.max_row-self.endrow:
                 sheet_data = ['','','','','','','','','','','','','','','','','']
                 for i,j in enumerate(row):
-                    #print(len(row))
-                    #sheet_data[str(self.sheet[self.startrow][i].value).strip()]= str(row[i]).strip()
-                    sheet_data[i]= str(j).strip()
+                    sheet_data[str(self.sheet[self.startrow][i].value).strip()]= str(row[i]).strip()#字典
                 rows.append(sheet_data)
         return rows
 
@@ -59,9 +57,9 @@ class sheet:
     
     def insert_row(self,pos,dat,quchong=True):
         '''插入一行'''
-        if quchong and len(self.get_sheet_data()) != 0:
-            for row in enumerate(self.get_sheet_data()):#遍历输入数据
-                if row[1]== dat:return
+        # if quchong and len(self.get_sheet_data()) != 0:
+        #     for row in enumerate(self.get_sheet_data()):#遍历输入数据
+        #         if row[1]== dat:return
         self.sheet.insert_rows(pos, amount=1)#插入新行
         for j,cell in enumerate(dat):
             self.sheet.cell(row=pos, column=j+1, value=cell)
@@ -69,10 +67,12 @@ class sheet:
     def insert_rows(self,pos,dat,quchong=True):
         '''插入多行'''
         for i,row_dat in enumerate(dat):
-            
-            if quchong and len(self.get_sheet_data()) != 0:
-                for row in enumerate(self.get_sheet_data()):#遍历输入数据
-                    if row[1]== row_dat:return
+            # if quchong and len(self.get_sheet_data()) != 0:
+            #     for row in enumerate(self.get_sheet_data()):#遍历输入数据
+            #         if row[1]!= row_dat:
+            #             print(row[1])
+            #             print(row_dat)
+            #             return
             self.sheet.insert_rows(pos+i, amount=1)#插入新行
             for j,cell in enumerate(row_dat):
                 self.sheet.cell(row=pos+i, column=j+1, value=cell)
