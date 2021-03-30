@@ -24,6 +24,27 @@ class csv_file:
         self._get_head()
         self._get_data()
         self._get_tail()
+
+    def __init__(self,account):
+        self.file_name=account.file
+        self.encoding=account.encoding
+        self.type=''
+
+        self.head_count=account.csv_headtrow
+        self.tail_count=account.csv_tailrow
+        self.row_count=0
+        self.data_count=0
+
+        self.head=[]#头部
+        self.tail=[]#尾部
+        self.rows=[]#所有行
+        self.data=[]#数据行
+
+        self._read_type()
+        self._read_csv()
+        self._get_head()
+        self._get_data()
+        self._get_tail()
     def _read_type(self):
         '''获取账单类型'''
         if 'alipay' in self.file_name:
@@ -46,13 +67,19 @@ class csv_file:
         self.row_count=i+1
         return self.rows,self.row_count
     def _get_head(self):
-        self.head.extend(self.rows[:self.head_count])
+        self.head=(self.rows[:self.head_count])
 
     def _get_data(self):
-        self.data.extend(self.rows[self.head_count:(self.row_count-self.tail_count)])
-
+        self.data=[]
+        for item in self.rows[self.head_count:(self.row_count-self.tail_count)]:
+            item_new=[]
+            for i in item:
+                item_new.append(i.strip())
+            self.data.append(item_new)
+         
+        return self.data
     def _get_tail(self):
-        self.tail.extend(self.rows[-self.tail_count:])
+        self.tail=(self.rows[-self.tail_count:])
 
     def data_parser(self):pass
     '''数据转换为字典格式'''

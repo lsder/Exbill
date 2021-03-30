@@ -34,20 +34,22 @@ class sheet:
      
     def get_data_end(self):
         '''获取数据最后一行的位置'''
-        return self.max_row-self.endrow
+        return self.sheet.max_row-self.endrow
 
     def get_sheet_data(self):
         '''获取sheet中的数据行,返回字典'''
         rows=[]
         for i,row in enumerate(self.sheet.values):
             if i>self.startrow and i<self.sheet.max_row-self.endrow:
-                sheet_data = {}
+                sheet_data = ['','','','','','','','','','','','','','','','','']
                 for i,j in enumerate(row):
-                    sheet_data[str(self.sheet[self.startrow][i].value).strip()]= str(row[i]).strip()
+                    #print(len(row))
+                    #sheet_data[str(self.sheet[self.startrow][i].value).strip()]= str(row[i]).strip()
+                    sheet_data[i]= str(j).strip()
                 rows.append(sheet_data)
         return rows
 
-    def get_list(self):
+    def get_id_list(self):
         '''获取sheet中的关键字  与插入位置'''
         rows=[]
         for i,row in enumerate(self.sheet.values):
@@ -55,21 +57,28 @@ class sheet:
                 rows.append(row[0])
         return rows
     
-    def insert_row(self,pos,dat):
+    def insert_row(self,pos,dat,quchong=True):
         '''插入一行'''
+        if quchong and len(self.get_sheet_data()) != 0:
+            for row in enumerate(self.get_sheet_data()):#遍历输入数据
+                if row[1]== dat:return
         self.sheet.insert_rows(pos, amount=1)#插入新行
         for j,cell in enumerate(dat):
             self.sheet.cell(row=pos, column=j+1, value=cell)
    
-    def insert_rows(self,pos,dat):
+    def insert_rows(self,pos,dat,quchong=True):
         '''插入多行'''
         for i,row_dat in enumerate(dat):
+            
+            if quchong and len(self.get_sheet_data()) != 0:
+                for row in enumerate(self.get_sheet_data()):#遍历输入数据
+                    if row[1]== row_dat:return
             self.sheet.insert_rows(pos+i, amount=1)#插入新行
             for j,cell in enumerate(row_dat):
                 self.sheet.cell(row=pos+i, column=j+1, value=cell)
 
    
-    def import_data(self,csv_obj):
+    def import_data_from_csv(self,csv_obj):
         '''导入数据到sheet ,数据为csv_loader对象'''
         if  self.sheet.max_row>(csv_obj.head_count+csv_obj.tail_count):#不是第一次导入
             start=self.get_data_end()+1
@@ -79,6 +88,7 @@ class sheet:
                 if(row[0] not in id_list ):#去重
                         self.insert_row(start+index,row)
                         index=index+1
+
             print('插入',index,'条数据')
         else:#copy
             self.insert_rows(1,csv_obj.rows)
@@ -90,7 +100,8 @@ if __name__ =="__main__":
     home='/'.join(sys.argv[0].split('/')[:-2])
     sys.path.append(home)
     from src.tool import csv_loader
-    fil=csv_loader.csv_file(home+"/data/temp/alipay_record_20210103_1339_1.csv",head_count=5,tail_count=7)
+    from src.account import account
+    alipay=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
+    fil=csv_loader.csv_file(alipay)
     alipay=sheet('tt.xlsx','alipay',start_row=5,end_row=7)
-
-    alipay.import_data(fil)
+    alipay.import_data_from_csv(fil)
