@@ -2,21 +2,6 @@ import openpyxl,os,csv
 
 #Excel中的Sheet
 class sheet:
-    def __init__(self,account):
-        self.file_name=account.file
-        self.sheet_name=account.name
-        self.endrow=account.csv_endrow
-        self.startrow=account.csv_startrow
-        #判断文件是否存在
-        if not os.path.isfile(self.file_name):
-            wb1=openpyxl.Workbook()
-            wb1.save(self.file_name)
-        self.wb = openpyxl.load_workbook(self.file_name)
-        #判断sheet是否存在
-        if self.sheet_name not in self.wb.sheetnames:
-            self.wb.create_sheet(self.sheet_name, 0)
-        self.sheet = self.wb[self.sheet_name]   
-
     def __init__(self,file_name,sheet_name,start_row=0,end_row=0):
         self.file_name=file_name
         self.sheet_name=sheet_name
@@ -99,9 +84,9 @@ if __name__ =="__main__":
     import sys
     home='/'.join(sys.argv[0].split('/')[:-2])
     sys.path.append(home)
-    from src.tool import csv_loader
+    from src.csv_loader import csv_file
     from src.account import account
-    alipay=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
-    fil=csv_loader.csv_file(alipay)
-    alipay=sheet('tt.xlsx','alipay',start_row=5,end_row=7)
-    alipay.import_data_from_csv(fil)
+    acc=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
+    fil=csv_file(acc)
+    a=sheet('tt.xlsx',acc.type,acc.csv_headtrow,acc.csv_tailrow)
+    a.import_data_from_csv(fil)

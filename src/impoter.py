@@ -10,7 +10,7 @@ import json
 import sys
 home='/'.join(sys.argv[0].split('/')[:-2])
 sys.path.append(home)
-from src.tool import csv_loader
+from src.csv_loader import csv_file
 from src.sheet import sheet
 from src.account import account
 '''
@@ -22,8 +22,9 @@ from src.account import account
 '''
 #数据进行处理与合并
 class impoter:
+    
     def __init__(self, account):#输入字典列表
-        csv_obj=csv_loader.csv_file(account)
+        csv_obj=csv_file(account)
         self.csv_obj=csv_obj
         self.acc=account
         self.orig_data=csv_obj._get_data()#暂不使用字典格式
@@ -31,6 +32,7 @@ class impoter:
         self.to_deal = []
 
     def _io_from_jydf(self,JYDF):#从交易对方获取交易类型
+        
         #todo JYDF_LIST.dat可加入account 
         with open('JYDF_LIST.dat', 'r', newline='') as f:
             reader = csv.DictReader(f)
@@ -67,7 +69,7 @@ class impoter:
         alipay.import_data_from_csv(self.csv_obj)
 
         alipay=sheet('tt.xlsx','all',start_row=0,end_row=0)
-        alipay.insert_rows(2,a.content)
+        alipay.insert_rows(2,self.content)
         alipay.wb.save(alipay.file_name)#保存数据
 
 class AliPayimpoter(impoter):
@@ -117,7 +119,7 @@ class AliPayimpoter(impoter):
         if item[0] == '':
             item[0] = row[2]
         #金额（元）
-        item[2] = row[9]
+        item[2] = float( row[9].strip('¥'))
         #收/支  
         if item[7]=='已废':
             item[3]=''   
@@ -150,7 +152,7 @@ class AliPayimpoter(impoter):
         if item[0] == '':
             item[0] = row[2]
         #金额（元）
-        item[2] = row[9]
+        item[2] = float( row[9].strip('¥'))
         #收/支     
         if item[7]=='已废':
             item[3]=''   
@@ -212,7 +214,7 @@ class WeChatimpoter(impoter):
         #交易时间
         item[0] = row[0]
         #金额（元）
-        item[2] = row[5]
+        item[2] =float( row[5].strip('¥'))
         #收/支  
         if item[7]=='已废':
             item[3]=''   
@@ -242,7 +244,7 @@ class WeChatimpoter(impoter):
         #交易时间
         item[0] = row[0]
         #金额（元）
-        item[2] = row[5]
+        item[2] =float( row[5].strip('¥'))
         #收/支   
         #print(self.orig_data) 
         if item[7]=='已废':
@@ -297,9 +299,9 @@ class ICBCimpoter(impoter):
         item[0] = row[0]
         #金额（元）
         if row[8]=='':
-            item[2] = row[9]
+            item[2] = float(row[9].strip('¥').replace(',','') )
         elif  row[9]=='':
-            item[2] = row[8]
+            item[2] = float(row[8].strip('¥').replace(',','') )
         
         #收/支  
         if item[7]=='已废':
@@ -332,9 +334,9 @@ class ICBCimpoter(impoter):
         item[0] = row[0]
         #金额（元）
         if row[8]=='':
-            item[2] = row[9]
+            item[2] = float(row[9].strip('¥').replace(',','') )
         elif  row[9]=='':
-            item[2] = row[8]
+            item[2] = float(row[8].strip('¥').replace(',','') )
         
         #收/支  
         if item[7]=='已废':
@@ -367,14 +369,15 @@ if __name__ =="__main__":
     alipay.insert_row(1,['交易时间'	,'交易详情','金额（元）','收/支','交易平台','交易类型','预算归属','交易状态' ,'来源\去向','备注'])
     alipay.wb.save(file)#保存数据
 
-    alipay=account(home+"/data/temp/alipay_record_20210103_1339_1.csv",'Alipay',5,7)
+    alipay=account(home+"/data/temp/alipay_record_20210404_1059_1.csv",'Alipay',5,7)
     a=AliPayimpoter(alipay)
     a.run()
 
-    wechat=account(home+"/data/temp/微信支付账单(20201101-20201201).csv",'WechatPay',start_row=17,endrow=0,encoding='UTF-8')
+    wechat=account(home+"/data/temp/微信支付账单(20210301-20210401).csv",'WechatPay',start_row=17,endrow=0,encoding='UTF-8')
     a=WeChatimpoter(wechat)
     a.run()
 
-    icbc=account(home+"/data/temp/hisdetail1614412687141.csv",'icbc',start_row=7,endrow=2,encoding='UTF-8')
+    icbc=account(home+"/data/temp/hisdetail1617505513900.csv",'icbc',start_row=7,endrow=2,encoding='UTF-8')
     a=ICBCimpoter(icbc)
     a.run()
+    

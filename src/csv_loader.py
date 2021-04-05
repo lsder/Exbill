@@ -4,27 +4,6 @@ len_config={'AliPay':17}
 
 #从原始账单文件获取数据
 class csv_file:
-    def __init__(self,file_name,encoding='GBK',head_count=0,tail_count=0):
-        self.file_name=file_name
-        self.encoding=encoding
-        self.type=''
-
-        self.head_count=head_count
-        self.tail_count=tail_count
-        self.row_count=0
-        self.data_count=0
-
-        self.head=[]#头部
-        self.tail=[]#尾部
-        self.rows=[]#所有行
-        self.data=[]#数据行
-
-        self._read_type()
-        self._read_csv()
-        self._get_head()
-        self._get_data()
-        self._get_tail()
-
     def __init__(self,account):
         self.file_name=account.file
         self.encoding=account.encoding
@@ -66,6 +45,7 @@ class csv_file:
         self.rows=rows
         self.row_count=i+1
         return self.rows,self.row_count
+
     def _get_head(self):
         self.head=(self.rows[:self.head_count])
 
@@ -81,8 +61,17 @@ class csv_file:
     def _get_tail(self):
         self.tail=(self.rows[-self.tail_count:])
 
-    def data_parser(self):pass
-    '''数据转换为字典格式'''
+    def data_parser(self,data):
+        tou=self.head[-1]
+        data_done=[]
+        for dt in data:
+            item={}
+            for i,n in enumerate( tou):
+                item[n]=dt[i]
+            data_done.append(item)
+        return data_done
+
+
 if __name__ =="__main__":
     import sys
     home='/'.join(sys.argv[0].split('/')[:-3])
